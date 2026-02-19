@@ -9,12 +9,9 @@ main(){
 	if(1) { x =&c;} 
 	else { x= &d;} 
 	*x = &t;
-	
-	
+
+	/* AUTOGEN_ALIASCHECK */
+	MAYALIAS(x, &t);
+	/* END_AUTOGEN_ALIASCHECK */
 }
-
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(x, &t);
-/* END_AUTOGEN_ALIASCHECK */
 

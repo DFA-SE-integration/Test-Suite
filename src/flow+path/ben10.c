@@ -22,9 +22,8 @@ int main(){
 
 	*p = 10;
 
+	/* AUTOGEN_ALIASCHECK */
+	MAYALIAS(p, &a);
+	/* END_AUTOGEN_ALIASCHECK */
 }
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(p, &a);
-/* END_AUTOGEN_ALIASCHECK */
 

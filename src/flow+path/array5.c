@@ -18,9 +18,8 @@ int main(){
 
 	printf("%d",a[10]);
 
+	/* AUTOGEN_ALIASCHECK */
+	MAYALIAS(pins_per_class, pins_per_class);
+	/* END_AUTOGEN_ALIASCHECK */
 }
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(pins_per_class, pins_per_class);
-/* END_AUTOGEN_ALIASCHECK */
 

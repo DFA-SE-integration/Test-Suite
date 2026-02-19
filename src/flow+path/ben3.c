@@ -24,10 +24,8 @@ else
     
     printf("%d,%d,%d,%d\n",*p,a,b,c);
 
-
+    /* AUTOGEN_ALIASCHECK */
+    MAYALIAS(p, &a);
+    /* END_AUTOGEN_ALIASCHECK */
 }
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(p, &a);
-/* END_AUTOGEN_ALIASCHECK */
 

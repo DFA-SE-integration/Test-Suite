@@ -11,10 +11,9 @@ int main(){
     int *b;
     b = &a.f1;
     *b = 100;
+
+    /* AUTOGEN_ALIASCHECK */
+    MAYALIAS(z, z);
+    /* END_AUTOGEN_ALIASCHECK */
 }
-
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(z, z);
-/* END_AUTOGEN_ALIASCHECK */
 

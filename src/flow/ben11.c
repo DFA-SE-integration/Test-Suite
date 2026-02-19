@@ -12,11 +12,11 @@ int main(){
 
 	*p = 100;
 	*q = 100;
-}
 
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(p, &c);
-MAYALIAS(q, &d);
-NOALIAS(p, q);
-/* END_AUTOGEN_ALIASCHECK */
+	/* AUTOGEN_ALIASCHECK */
+	MAYALIAS(p, &c);
+	MAYALIAS(q, &d);
+	NOALIAS(p, q);
+	/* END_AUTOGEN_ALIASCHECK */
+}
 

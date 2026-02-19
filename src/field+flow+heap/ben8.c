@@ -27,17 +27,17 @@ int main(){
     a = malloc(1);
     a = malloc(2);
     printf("%d",f.f2.f3);
+
+    /* AUTOGEN_ALIASCHECK */
+    MAYALIAS(f1, &t);
+    MAYALIAS(f4, &obj);
+    MAYALIAS(a, &obj);
+    MAYALIAS(b, &t);
+    NOALIAS(f1, f4);
+    /* END_AUTOGEN_ALIASCHECK */
 }
 
 void foo(int* x, int *y){
     *x = *y;
 }
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(f1, &t);
-MAYALIAS(f4, &obj);
-MAYALIAS(a, &obj);
-MAYALIAS(b, &t);
-NOALIAS(f1, f4);
-/* END_AUTOGEN_ALIASCHECK */
 

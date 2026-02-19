@@ -10,13 +10,13 @@ int main(){
     y=&y1;
     ***m=10;
     z=**m;
-}
 
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(m, &y);
-MAYALIAS(n, &z);
-MAYALIAS(z, &z1);
-MAYALIAS(y, &y1);
-NOALIAS(m, n);
-/* END_AUTOGEN_ALIASCHECK */
+    /* AUTOGEN_ALIASCHECK */
+    MAYALIAS(m, &y);
+    MAYALIAS(n, &z);
+    MAYALIAS(z, &z1);
+    MAYALIAS(y, &y1);
+    NOALIAS(m, n);
+    /* END_AUTOGEN_ALIASCHECK */
+}
 

@@ -16,12 +16,11 @@ int main(){
 	agg1[1].g = b;
 	//agg1[0].f = &c;
 
+	/* AUTOGEN_ALIASCHECK */
+	MAYALIAS(a, &a1);
+	MAYALIAS(b, &b1);
+	MAYALIAS(f, &c);
+	NOALIAS(a, b);
+	/* END_AUTOGEN_ALIASCHECK */
 }
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(a, &a1);
-MAYALIAS(b, &b1);
-MAYALIAS(f, &c);
-NOALIAS(a, b);
-/* END_AUTOGEN_ALIASCHECK */
 

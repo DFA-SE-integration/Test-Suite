@@ -27,12 +27,12 @@ int main(){
     b = c->k;
     *(c->k) =100;
     *b = 100;
-}
 
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(a, &a1);
-MAYALIAS(c, &a2);
-MAYALIAS(k, &obj);
-NOALIAS(a, c);
-/* END_AUTOGEN_ALIASCHECK */
+    /* AUTOGEN_ALIASCHECK */
+    MAYALIAS(a, &a1);
+    MAYALIAS(c, &a2);
+    MAYALIAS(k, &obj);
+    NOALIAS(a, c);
+    /* END_AUTOGEN_ALIASCHECK */
+}
 

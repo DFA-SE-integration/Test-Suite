@@ -13,11 +13,10 @@ int main(){
 	//p = q;
 	printf("%d,%d %d %d",*p,*q,a,b);
 
+	/* AUTOGEN_ALIASCHECK */
+	MAYALIAS(p, &a);
+	MAYALIAS(q, &b);
+	NOALIAS(p, q);
+	/* END_AUTOGEN_ALIASCHECK */
 }
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(p, &a);
-MAYALIAS(q, &b);
-NOALIAS(p, q);
-/* END_AUTOGEN_ALIASCHECK */
 

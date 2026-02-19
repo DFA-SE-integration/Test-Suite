@@ -26,15 +26,15 @@ int main(){
     a = &g1.f2;
     b=&g1.f3;
     foo(a,b);
+
+    /* AUTOGEN_ALIASCHECK */
+    MAYALIAS(s2, &s1);
+    MAYALIAS(f1, &obj);
+    NOALIAS(s2, f1);
+    /* END_AUTOGEN_ALIASCHECK */
 }
 
 void foo(int* x, int *y){
     *x = *y;
 }
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(s2, &s1);
-MAYALIAS(f1, &obj);
-NOALIAS(s2, f1);
-/* END_AUTOGEN_ALIASCHECK */
 

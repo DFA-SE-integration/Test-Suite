@@ -4,10 +4,8 @@ int main(){
 
     *a = "fdf";
 
-
+    /* AUTOGEN_ALIASCHECK */
+    MAYALIAS(a, a);
+    /* END_AUTOGEN_ALIASCHECK */
 }
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(a, a);
-/* END_AUTOGEN_ALIASCHECK */
 

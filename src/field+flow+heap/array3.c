@@ -18,9 +18,8 @@ int main(){
     node_arr[0].number = &k;
     *(node_arr[0].number) = 100;
 
+    /* AUTOGEN_ALIASCHECK */
+    MAYALIAS(number, &k);
+    /* END_AUTOGEN_ALIASCHECK */
 }
-
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(number, &k);
-/* END_AUTOGEN_ALIASCHECK */
 

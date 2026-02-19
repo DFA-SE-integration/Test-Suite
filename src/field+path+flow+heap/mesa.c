@@ -42,7 +42,7 @@ int main()
 	check_pointers( table );
 
 /* AUTOGEN_ALIASCHECK */
-MAYALIAS(x, x);
+	MAYALIAS(table, table);
 /* END_AUTOGEN_ALIASCHECK */
 
 	return 0;
