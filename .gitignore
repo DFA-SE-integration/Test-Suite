@@ -1,3 +1,5 @@
 crux-bitcode
 .vscode
 info.txt
+.DS_Store
+build
