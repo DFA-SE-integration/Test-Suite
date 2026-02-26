@@ -45,5 +45,9 @@ int main() {
 	// They are alias due to the wrongly solved
 	// target, bar(), at indirect call site in
 	// run().
-	MAYALIAS(*pp, *qq);
+	/* AUTOGEN_ALIASCHECK */
+	MUSTALIAS(*pp, &x);
+	MUSTALIAS(*qq, &y);
+	NOALIAS(*pp, *qq);
+	/* END_AUTOGEN_ALIASCHECK */
 }

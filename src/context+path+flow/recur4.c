@@ -1,12 +1,14 @@
 #include "aliascheck.h" 
+
 int **x, *y;
 int z;
+
 void f(int **p);
+
 void main(){
 	x = &y;
 	f(x);
 }
-
 
 void f(int **p){
 	int k;
@@ -18,12 +20,17 @@ void f(int **p){
 
 		f(p);
 	}
-	/// y will not alias to &z as the value flow
-	/// of y after it is updated at "*p=&z" will
-	/// flow into f(p) again and then be updated
-	/// by the first statement "y=&k".
+	// 	Why this is true (if execution paths are taken into account)
+	
+	// The key point is that z is never modified anywhere in f.
+	
+	// If z == 0, the if (z) branch is not taken, and after the if we still have y = &k → MUSTALIAS(y, &k).
+	
+	// If z != 0, the branch is taken, f(p) is called, and then it keeps calling itself recursively forever (because z still does not change).
+	// That means control never reaches the program point after the if.
+	
+	// Therefore, at the program point after the if, there is only one actually reachable scenario: z == 0, and in that case y == &k.
 	NOALIAS(y,&z);
-	MAYALIAS(y,&k);
-
+	MUSTALIAS(y,&k);
 }
 

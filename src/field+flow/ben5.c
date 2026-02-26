@@ -1,38 +1,43 @@
 #include "aliascheck.h"
+
 typedef struct node{
     char* s;
     struct node* tail;
-
-}node_t;
+} node_t;
 
 typedef struct arc{
     node_t *tail;
-    struct arc*next;
-
-}art_t;
+    struct arc* next;
+} art_t;
 
 typedef struct agg1{
     int *k;
-    
-}agg1;
+} agg1;
 
-
-int main(){
-    agg1 a1,a2;
+int main() {
+    agg1 a1, a2;
     agg1 *a = &a1;
     agg1 *c = &a2;
-    int obj,*b;
+
+    int obj, *b;
+
     a->k = &obj;
     c->k = a->k;
     b = c->k;
-    *(c->k) =100;
+
+    *(c->k) = 100;
     *b = 100;
 
     /* AUTOGEN_ALIASCHECK */
-    MAYALIAS(a, &a1);
-    MAYALIAS(c, &a2);
-    MAYALIAS(k, &obj);
+    MUSTALIAS(a, &a1);
+    MUSTALIAS(c, &a2);
+
+    MUSTALIAS(a->k, &obj);
+    MUSTALIAS(c->k, &obj);
+    MUSTALIAS(b,   &obj);
+
     NOALIAS(a, c);
     /* END_AUTOGEN_ALIASCHECK */
-}
 
+    return 0;
+}

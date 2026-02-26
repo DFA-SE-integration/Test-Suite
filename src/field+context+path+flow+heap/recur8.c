@@ -1,30 +1,41 @@
 #include "aliascheck.h"
-int z1,z2;
+#include <stdlib.h>
+
+int z1, z2;
+
 void foo(int **p);
-void bar(int **a){
-	if(z1>5) return;
+
+void bar(int **a) {
+	if (z1 > 5) return;
 	z1++;
+
 	int *c, b;
+
+	/* strong update expected: after this, *a points only to &b */
 	*a = &b;
 	c = *a;
-	MUSTALIAS(c,&b);
-	MAYALIAS(c,&z1);   // it should be no-alias if strong updates are enabled
-	MAYALIAS(c,&z2);
+
+	MUSTALIAS(c, &b);
+	NOALIAS(c, &z1);   /* no-alias when strong updates are enabled */
+	NOALIAS(c, &z2);
+
 	foo(a);
 }
 
-
-void foo(int** p){
-
-	p = malloc(10);
+void foo(int **p) {
+	/* heap */
+	p = (int**)malloc(sizeof(int*));
 	*p = &z2;
+
 	bar(p);
 }
 
-int main(){
-
+int main() {
 	int **x, *y;
+
 	x = &y;
 	y = &z1;
+
 	foo(x);
+	return 0;
 }

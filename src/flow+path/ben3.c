@@ -1,31 +1,38 @@
 #include "aliascheck.h"
-int main(){
-int a,b,*p,i,c;
+#include <stdio.h>
 
+int main(int argc, char **argv){
+    int a = 0, b = 0, c = 0;
+    int *p = 0, *q = 0;
+    int i = argc;          /* инициализированный флаг */
 
-if(i)
-    p = &a;
-else
-    p = &b;
+    /* PATH: p выбирается по пути */
+    if (i)
+        p = &a;
+    else
+        p = &b;
+
+    q = p;                 /* сохраняем path-значение */
 
     *p = 10;
-
     c = *p;
 
-    a = 5;
-
-    b = 4;
-
+    /* FLOW: strong update убивает прошлый выбор пути для p */
+    p = &a;
     *p = 20;
 
-    p = &a;
+    /* проверяем path-эффект через q и отношение p/q */
+    if (i) {
+        MUSTALIAS(q, &a);
+        MUSTALIAS(p, q);   /* оба &a */
+    } else {
+        MUSTALIAS(q, &b);
+        NOALIAS(p, q);     /* p=&a, q=&b */
+    }
 
-    *p = 10;
-    
-    printf("%d,%d,%d,%d\n",*p,a,b,c);
+    /* и отдельный flow-чек */
+    MUSTALIAS(p, &a);
 
-    /* AUTOGEN_ALIASCHECK */
-    MAYALIAS(p, &a);
-    /* END_AUTOGEN_ALIASCHECK */
+    printf("%d,%d,%d,%d\n", *p, a, b, c);
+    return 0;
 }
-

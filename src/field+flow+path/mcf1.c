@@ -6,8 +6,10 @@
  *      Author: rockysui
  */
 
-//#include "psimplex.h"
 #include "defines.h"
+#include <stdlib.h>
+#include <stdio.h>
+
 #define K 300
 #define B 100
 
@@ -21,39 +23,16 @@
       } \
 }
 
-#ifdef _PROTO_
 cost_t bea_compute_red_cost( arc_t *arc )
-#else
-cost_t bea_compute_red_cost( arc )
-    arc_t *arc;
-#endif
 {
     return arc->cost - arc->tail->potential + arc->head->potential;
 }
 
-
-
-
-
-
-
-#ifdef _PROTO_
 int bea_is_dual_infeasible( arc_t *arc, cost_t red_cost )
-#else
-int bea_is_dual_infeasible( arc, red_cost )
-    arc_t *arc;
-    cost_t red_cost;
-#endif
 {
     return(    (red_cost < 0 && arc->ident == AT_LOWER)
             || (red_cost > 0 && arc->ident == AT_UPPER) );
 }
-
-
-
-
-
-
 
 typedef struct basket
 {
@@ -66,14 +45,7 @@ static long basket_size;
 static BASKET basket[B+K+1];
 static BASKET *perm[B+K+1];
 
-
-
-#ifdef _PROTO_
 void sort_basket( long min, long max )
-#else
-void sort_basket( min, max )
-    long min, max;
-#endif
 {
     long l, r;
     cost_t cut;
@@ -110,28 +82,12 @@ void sort_basket( min, max )
         sort_basket( l, max );
 }
 
-
-
-
-
-
 static long nr_group;
 static long group_pos;
-
-
 static long initialize = 1;
 
-
-#ifdef _PROTO_
 arc_t *primal_bea_mpp( long m,  arc_t *arcs, arc_t *stop_arcs,
-                              cost_t *red_cost_of_bea )
-#else
-arc_t *primal_bea_mpp( m, arcs, stop_arcs, red_cost_of_bea )
-    long m;
-    arc_t *arcs;
-    arc_t *stop_arcs;
-    cost_t *red_cost_of_bea;
-#endif
+                       cost_t *red_cost_of_bea )
 {
     long i, next, old_group_pos;
     arc_t *arc;
@@ -159,9 +115,9 @@ arc_t *primal_bea_mpp( m, arcs, stop_arcs, red_cost_of_bea )
                 perm[next]->cost = red_cost;
                 perm[next]->abs_cost = ABS(red_cost);
             }
-                }
-        basket_size = next;
         }
+        basket_size = next;
+    }
 
     old_group_pos = group_pos;
 
@@ -203,13 +159,7 @@ NEXT:
     return( perm[1]->a );
 }
 
-
-#ifdef _PROTO_
 long refresh_potential( network_t *net )
-#else
-long refresh_potential( net )
-    network_t *net;
-#endif
 {
     node_t *stop = net->stop_nodes;
     node_t *node, *tmp;
@@ -255,17 +205,7 @@ long refresh_potential( net )
     return checksum;
 }
 
-#ifdef _PROTO_
-void primal_update_flow(
-                 node_t *iplus,
-                 node_t *jplus,
-                 node_t *w
-                 )
-#else
-void primal_update_flow( iplus, jplus, w )
-    node_t *iplus, *jplus;
-    node_t *w;
-#endif
+void primal_update_flow( node_t *iplus, node_t *jplus, node_t *w )
 {
     for( ; iplus != w; iplus = iplus->pred )
     {
@@ -284,26 +224,13 @@ void primal_update_flow( iplus, jplus, w )
     }
 }
 
-
-#ifdef _PROTO_
-node_t *primal_iminus(
-                      flow_t *delta,
-                      long *xchange,
-                      node_t *iplus,
-                      node_t*jplus,
-                      node_t **w
-                    )
-#else
-node_t *primal_iminus( delta, xchange, iplus, jplus, w )
-    flow_t *delta;
-    long *xchange;
-    node_t *iplus, *jplus;
-    node_t **w;
-#endif
-
+node_t *primal_iminus( flow_t *delta,
+                       long *xchange,
+                       node_t *iplus,
+                       node_t *jplus,
+                       node_t **w )
 {
     node_t *iminus = NULL;
-
 
     while( iplus != jplus )
     {
@@ -330,12 +257,7 @@ node_t *primal_iminus( delta, xchange, iplus, jplus, w )
     return iminus;
 }
 
-#ifdef _PROTO_
 long primal_net_simplex( network_t *net )
-#else
-long primal_net_simplex(  net )
-    network_t *net;
-#endif
 {
     flow_t        delta;
     flow_t        new_flow;
@@ -359,18 +281,11 @@ long primal_net_simplex(  net )
     long          *bound_exchanges = &(net->bound_exchanges);
     long          *checksum = &(net->checksum);
 
-
     while( !opt )
     {
         if( (bea = primal_bea_mpp( m, arcs, stop_arcs, &red_cost_of_bea )) )
         {
             (*iterations)++;
-
-#ifdef DEBUG
-            printf( "it %ld: bea = (%ld,%ld), red_cost = %ld\n",
-                    *iterations, bea->tail->number, bea->head->number,
-                    red_cost_of_bea );
-#endif
 
             if( red_cost_of_bea > ZERO )
             {
@@ -385,7 +300,7 @@ long primal_net_simplex(  net )
 
             delta = (flow_t)1;
             iminus = primal_iminus( &delta, &xchange, iplus,
-                    jplus, &w );
+                                    jplus, &w );
 
             if( !iminus )
             {
@@ -409,7 +324,6 @@ long primal_net_simplex(  net )
                 }
 
                 jminus = iminus->pred;
-
                 bla = iminus->basic_arc;
 
                 if( xchange != iminus->orientation )
@@ -427,11 +341,6 @@ long primal_net_simplex(  net )
                 else
                     new_orientation = DOWN;
 
-//                update_tree( !xchange, new_orientation,
-//                            delta, new_flow, iplus, jplus, iminus,
-//                            jminus, w, bea, red_cost_of_bea,
-//                            (flow_t)net->feas_tol );
-
                 bea->ident = BASIC;
                 bla->ident = new_set;
 
@@ -446,32 +355,103 @@ long primal_net_simplex(  net )
                 }
             }
         }
-
     }
+
+    return 0;
 }
 
-#ifdef _PROTO_
-long getfree( 
-		            network_t *net
-					            )
-#else
-long getfree( net )
-	     network_t *net;
-#endif
-{  
-	    FREE( net->nodes );
-		    FREE( net->arcs );
-			    FREE( net->dummy_arcs );
-				    net->nodes = net->stop_nodes = NULL;
-					    net->arcs = net->stop_arcs = NULL;
-						    net->dummy_arcs = net->stop_dummy = NULL;
+/* для path в AUTOGEN: значение приходит из main(argc) */
+volatile int gflag = 0;
 
+long getfree( network_t *net )
+{
+    FREE( net->nodes );
+    FREE( net->arcs );
+    FREE( net->dummy_arcs );
+    net->nodes = net->stop_nodes = NULL;
+    net->arcs = net->stop_arcs = NULL;
+    net->dummy_arcs = net->stop_dummy = NULL;
 
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(xchange, xchange);
-/* END_AUTOGEN_ALIASCHECK */
+    /* AUTOGEN_ALIASCHECK */
+    {
+        /* -------- field-sensitivity на реальных полях network_t -------- */
+        NOALIAS(&net->nodes, &net->arcs);
+        NOALIAS(&net->nodes, &net->dummy_arcs);
+        NOALIAS(&net->arcs,  &net->dummy_arcs);
 
-							    return 0;
+        /* -------- field + flow + path: эффекты в if/else, потом merge, потом проверки -------- */
+        struct FS {
+            int *f1;
+            int *f2;
+        } t;
+
+        int v1, v2, v3;
+
+        /* field: разные поля не алиасят */
+        t.f1 = &v1;
+        t.f2 = &v2;
+        NOALIAS(&t.f1, &t.f2);
+        NOALIAS(t.f1, t.f2);
+
+        /* effects (flow) */
+        int **pp;
+        if (gflag & 1)
+            pp = &t.f1;
+        else
+            pp = &t.f2;
+
+        /* merge */
+        int **pp_m = pp;
+
+        /* effect */
+        *pp_m = &v3;
+
+        /* checks (path) */
+        if (gflag & 1) {
+            MUSTALIAS(t.f1, &v3);
+            NOALIAS(t.f2, &v3);
+        } else {
+            MUSTALIAS(t.f2, &v3);
+            NOALIAS(t.f1, &v3);
+        }
+
+        /* ещё один path-check после flow-обновления */
+        /* effects */
+        int *sel;
+        if (gflag & 1)
+            sel = t.f2;   /* здесь будет &v2 */
+        else
+            sel = t.f1;   /* здесь будет &v1 */
+
+        /* merge */
+        int *sel_m = sel;
+
+        /* checks (path) */
+        if (gflag & 1) {
+            MUSTALIAS(sel_m, &v2);
+        } else {
+            MUSTALIAS(sel_m, &v1);
+        }
+
+        /* связь через разыменование (flow) */
+        int *via_pp = *pp;
+        MUSTALIAS(via_pp, &v3);
+    }
+    /* END_AUTOGEN_ALIASCHECK */
+
+    return 0;
 }
 
-int main(){}
+int main(int argc, char **argv)
+{
+    (void)argv;
+
+    /* делаем путь зависящим от входа */
+    gflag = argc;
+
+    /* минимальный вызов, чтобы анализ “видел” AUTOGEN внутри getfree */
+    network_t net = (network_t){0};
+    getfree(&net);
+
+    return 0;
+}

@@ -12,11 +12,15 @@ int main(){
     z=**m;
 
     /* AUTOGEN_ALIASCHECK */
-    MAYALIAS(m, &y);
-    MAYALIAS(n, &z);
-    MAYALIAS(z, &z1);
-    MAYALIAS(y, &y1);
+    NOALIAS(m, &y);
+    NOALIAS(n, &z);
+    NOALIAS(z, &z1);
+    MUSTALIAS(y, &y1);
     NOALIAS(m, n);
+    
+    /* можно добавить для усиления flow-sensitivity */
+    MUSTALIAS(n, &y);
+    MUSTALIAS(z, &y1);
     /* END_AUTOGEN_ALIASCHECK */
 }
 

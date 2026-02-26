@@ -1,29 +1,45 @@
 #include "aliascheck.h"
 
-struct agg{
-    int*pi;
+struct agg {
+    int *pi;
     int k;
-}agg;
+};
 
-int main(){
-    int *s,k1,k2;
-    struct agg *a,*b, obj1,obj2;
-    /// Note that, all pointers should be properly initialized
-    /// the path information uninitialized value are not fully maintained on LLVM PHINode after mem2reg
-    a = b = 0;
-    if(k1){
+int main(int argc, char **argv){
+    int *s = 0;
+    int k1 = 0, k2 = 0;
+
+    struct agg obj1, obj2;
+    struct agg *a = &obj1, *b = &obj2;
+
+    obj1.pi = 0;
+    obj2.pi = 0;
+
+    if (argc) {
         a = &obj1;
-        s=&k1;
-    }
-    else{
+        s = &k1;
+
+        a->pi = s;
+
+        MUSTALIAS(obj1.pi, &k1);
+        NOALIAS(obj1.pi, &k2);
+
+        /* на этом пути obj2.pi не трогали */
+        NOALIAS(obj2.pi, &k1);
+        NOALIAS(obj2.pi, &k2);
+    } else {
         b = &obj2;
-        s=&k2;
+        s = &k2;
+
+        b->pi = s;
+
+        MUSTALIAS(obj2.pi, &k2);
+        NOALIAS(obj2.pi, &k1);
+
+        /* на этом пути obj1.pi не трогали */
+        NOALIAS(obj1.pi, &k1);
+        NOALIAS(obj1.pi, &k2);
     }
 
-    a->pi = s;
-    b->pi = s;
-    MAYALIAS(obj1.pi,&k1);
-    NOALIAS(obj1.pi,&k2);
-    MAYALIAS(obj2.pi,&k2);
-    NOALIAS(obj2.pi,&k1);
+    return 0;
 }

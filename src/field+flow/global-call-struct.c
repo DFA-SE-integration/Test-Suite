@@ -29,7 +29,8 @@ int main() {
 	int **pp, **qq;
 	pp = &p;
 	qq = &q;
-	bar(pp,qq);
-	MAYALIAS(p, q);
-	MAYALIAS(global.f2, *qq);
+	bar(pp, qq);
+
+	MUSTALIAS(p, q);
+	MUSTALIAS(global.f2, *qq);
 }

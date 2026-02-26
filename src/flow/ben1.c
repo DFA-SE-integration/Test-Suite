@@ -1,26 +1,45 @@
 #include "aliascheck.h"
-struct agg{
-
-	int* f;
-	int *g;
-
-}agg;
-
-int main(){
-	int a1, b1,c1;
-	int *a, *b,*c;
-	struct agg agg1[100];
-	a = &a1;
-	b = &b1;
-	agg1[1].f = a;
-	agg1[1].g = b;
-	//agg1[0].f = &c;
-
-	/* AUTOGEN_ALIASCHECK */
-	MAYALIAS(a, &a1);
-	MAYALIAS(b, &b1);
-	MAYALIAS(f, &c);
-	NOALIAS(a, b);
-	/* END_AUTOGEN_ALIASCHECK */
+void foo(int **s){
+    
 }
+int main(){
 
+    int* a;
+    int* b;
+    int**c;
+    
+    int x,y;
+
+    int *w;
+    int **s;
+    int u;
+    a=&x;
+    b=&y;
+    c=&a;
+    s = c;
+    s=&w;
+    w=&u;
+    u = 9;
+    foo(s); 
+    if(x==5){
+    	**c = 10;
+    }
+    else{
+	*b = 100;
+    }
+
+    while(u>10){
+	*w = 100;
+    }
+
+    /* AUTOGEN_ALIASCHECK */
+    MUSTALIAS(a, &x);
+    MUSTALIAS(b, &y);
+    MUSTALIAS(c, &a);
+    MUSTALIAS(s, &w);
+    NOALIAS(a, b);
+    /* END_AUTOGEN_ALIASCHECK */
+
+    return 0;
+
+}

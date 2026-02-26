@@ -29,12 +29,11 @@ void main(){
 	}
 	foo(a,b,c);
     MUSTALIAS(x,z);
-    MUSTALIAS(y,&obj);
+	MUSTALIAS(y,&obj);
 	foo(d,e,f);
     NOALIAS(w,k);
-    MAYALIAS(w,&obj);
-    NOALIAS(x,w);
-    NOALIAS(z,k);
-    MAYALIAS(y,w);
-
+	MUSTALIAS(w,&obj);
+	NOALIAS(x,w);
+	NOALIAS(z,k);
+	MUSTALIAS(y,w);
 }

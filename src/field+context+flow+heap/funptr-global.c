@@ -1,43 +1,50 @@
+#include "aliascheck.h"
+#include <stdlib.h>
+
 /*
  * functionpointer1.c
  * Test function pointer with field initialization of globals
  *
- *  Created on: 01/09/2015
- *      Author: Yulei Sui
+ * MUST/NO version (field + context + flow + heap)
  */
-#include "aliascheck.h"
 
 typedef int PRSize;
 typedef unsigned int PRUint32;
-typedef unsigned int PRUintn;
-typedef int PRIntn;
 
 struct PLHashAllocOps {
-   void *(*allocTable)(void *pool , PRSize size ) ;
+  void *(*allocTable)(void *pool, PRSize size);
 };
 typedef struct PLHashAllocOps PLHashAllocOps;
 
-static void *DefaultAllocTable(void *pool , PRSize size )
-{ void *tmp ;
-
-  {
-  tmp = malloc((unsigned int )size);
-  return (tmp);
-}
+__attribute__((noinline))
+static void *DefaultAllocTable(void *pool, PRSize size) {
+  (void)pool;
+  return malloc((size_t)size);
 }
 
-PLHashAllocOps defaultHashAllocOps  =    {& DefaultAllocTable};
-void PL_NewHashTable(PRUint32 n , void *allocPriv )
-{
-  void *tmp___0 ;
-  void *tmp___1 ;
+PLHashAllocOps defaultHashAllocOps = { &DefaultAllocTable };
 
-  PLHashAllocOps const   * allocOps = (PLHashAllocOps const   *)(& defaultHashAllocOps);
-  tmp___0 = (*(allocOps->allocTable))(allocPriv, (int )sizeof(int));
-  tmp___1 = (*(allocOps->allocTable))(allocPriv, (int )sizeof(int));
-  MAYALIAS(tmp___0,tmp___1);
+__attribute__((noinline))
+void PL_NewHashTable(PRUint32 n, void *allocPriv) {
+  (void)n;
 
+  PLHashAllocOps const *allocOps =
+      (PLHashAllocOps const *)(&defaultHashAllocOps);
+
+  void *tmp0 = (*(allocOps->allocTable))(allocPriv, (int)sizeof(int));
+  void *tmp1 = (*(allocOps->allocTable))(allocPriv, (int)sizeof(int));
+
+  /* heap: two separate mallocs must not alias */
+  NOALIAS(tmp0, tmp1);
+
+  /* field: the function pointer loaded from the global struct is exact */
+  MUSTALIAS(allocOps->allocTable, DefaultAllocTable);
+
+  free(tmp0);
+  free(tmp1);
 }
 
-int main(){return 0;}
-
+int main(void) {
+  PL_NewHashTable(1, 0);
+  return 0;
+}

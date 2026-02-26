@@ -14,9 +14,11 @@ int main(){
 	*q = 100;
 
 	/* AUTOGEN_ALIASCHECK */
-	MAYALIAS(p, &c);
-	MAYALIAS(q, &d);
-	NOALIAS(p, q);
+	NOALIAS(p, &c);
+	MUSTALIAS(q, &d);
+	MUSTALIAS(p, q);
+	MUSTALIAS(p, &d);
+	NOALIAS(q, &c);
 	/* END_AUTOGEN_ALIASCHECK */
 }
 

@@ -29,11 +29,11 @@ int main(){
     printf("%d",f.f2.f3);
 
     /* AUTOGEN_ALIASCHECK */
-    MAYALIAS(f1, &t);
-    MAYALIAS(f4, &obj);
-    MAYALIAS(a, &obj);
-    MAYALIAS(b, &t);
-    NOALIAS(f1, f4);
+    MUSTALIAS(f.f1, &t);
+    MUSTALIAS(f.f4, &obj);
+    NOALIAS(a, &obj);
+    MUSTALIAS(b, &t);
+    NOALIAS(f.f1, f.f4);
     /* END_AUTOGEN_ALIASCHECK */
 }
 

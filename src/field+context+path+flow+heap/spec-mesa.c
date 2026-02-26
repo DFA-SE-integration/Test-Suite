@@ -1,20 +1,29 @@
 /*
- * Heap and structures like 177.mesa
+ * Heap + field + context + path + flow
+ * (mesa-style API tables on heap, current-context switching, branch on function pointer)
  * Author: Sen Ye
  * Date: 09/09/2013
  */
 #include "aliascheck.h"
+#include <stdlib.h>
 
+__attribute__((noinline))
 void begin(int *p, int *q) {
-	NOALIAS(p,q);
+	/* всегда вызываем с &x и &y */
+	NOALIAS(p, q);
 }
 
+__attribute__((noinline))
 void end(int *p, int *q) {
-	MAYALIAS(p,q); // should be NOALIAS under context-sensitive
+	/* в обеих ветках draw аргументы различны: (&x,&z) или (&y,&x) */
+	NOALIAS(p, q);
 }
 
+__attribute__((noinline))
 void render(int *p, int *q) {
-	MAYALIAS(p,q);
+	/* render вызывается только когда CC->API.Render != NULL,
+	   и тогда draw подаёт (r, r) */
+	MUSTALIAS(p, q);
 }
 
 struct api_table {
@@ -29,62 +38,94 @@ struct context {
 };
 
 struct mesa_context {
-	struct context * ctx;
+	struct context *ctx;
 };
 
-void init_exec_pointers(struct api_table * table) {
-	table->Begin = begin;
-	table->End = end;
-	table->Render = render;
+__attribute__((noinline))
+void init_exec_pointers(struct api_table *table, int with_render) {
+	table->Begin  = begin;
+	table->End    = end;
+	table->Render = with_render ? render : (void (*)(int*,int*))0;
 }
 
-void init_api_function(struct context * ctx) {
-	init_exec_pointers(&ctx->Exec);
+__attribute__((noinline))
+void init_api_function(struct context *ctx, int with_render) {
+	init_exec_pointers(&ctx->Exec, with_render);
 }
 
-struct context * create_context() {
-	// Create heap objects here
-	struct context * ctx = (struct context*)malloc(sizeof(struct context));
-	init_api_function(ctx);
-	// If field-sensitive, following statement would create another two heap
-	// objects
+__attribute__((noinline))
+struct context *create_context(int with_render) {
+	struct context *ctx = (struct context*)malloc(sizeof(struct context));
+	init_api_function(ctx, with_render);
+
+	/* field-sensitive: API и Exec — разные поля, здесь копирование таблицы */
 	ctx->API = ctx->Exec;
 	return ctx;
 }
 
-struct context * CC;
+struct context *CC;
 
-void change_context(struct context * ctx) {
+__attribute__((noinline))
+void change_context(struct context *ctx) {
 	CC = ctx;
 }
 
-void make_current(struct mesa_context * ctx) {
-	change_context(ctx->ctx);
+__attribute__((noinline))
+void make_current(struct mesa_context *mctx) {
+	change_context(mctx->ctx);
 }
 
+__attribute__((noinline))
 void draw(int *p, int *q, int *r) {
 	(*CC->API.Begin)(p, q);
-	if (p)
-		q = r;
-	if (*CC->API.Render) {
-		(*CC->API.Render)(q, r);
-		(*CC->API.End)(p, r);
-	}
+
+	/* эффекты (flow) в отдельных ветках */
+	int *q2;
+	if (CC->API.Render)
+		q2 = r;
 	else
-		(*CC->API.End)(q, p);
+		q2 = q;
+
+	/* проверки (path) в отдельных базовых блоках */
+	if (CC->API.Render)
+		MUSTALIAS(q2, r);
+	else
+		NOALIAS(q2, r);
+
+	/* ветвление по heap-полю function pointer (path + heap + context) */
+	if (CC->API.Render) {
+		(*CC->API.Render)(q2, r);  /* (r,r) -> MUSTALIAS внутри render */
+		(*CC->API.End)(p, r);      /* (&x,&z) -> NOALIAS внутри end */
+	} else {
+		(*CC->API.End)(q2, p);     /* (&y,&x) -> NOALIAS внутри end */
+	}
 }
 
-void delete_context(struct context * ctx) {
-	free (ctx);
+__attribute__((noinline))
+void delete_context(struct context *ctx) {
+	free(ctx);
 }
 
 int main() {
-	int x,y,z;
-	struct mesa_context * mesa = (struct mesa_context*)malloc(sizeof(struct mesa_context));
-	mesa->ctx = create_context();
-	make_current(mesa);
+	int x, y, z;
+
+	/* два heap-контекста с разными API.Render */
+	struct mesa_context *m1 = (struct mesa_context*)malloc(sizeof(struct mesa_context));
+	struct mesa_context *m2 = (struct mesa_context*)malloc(sizeof(struct mesa_context));
+	m1->ctx = create_context(1); /* Render != NULL */
+	m2->ctx = create_context(0); /* Render == NULL */
+
+	/* flow-sensitive смена текущего контекста */
+	make_current(m1);
 	draw(&x, &y, &z);
-	delete_context(mesa->ctx);
-	free(mesa);
+
+	make_current(m2);
+	draw(&x, &y, &z);
+
+	delete_context(m1->ctx);
+	delete_context(m2->ctx);
+	free(m1);
+	free(m2);
+
 	return 0;
 }

@@ -1,22 +1,50 @@
 #include "aliascheck.h"
+#include <stdio.h>
 
-int main(){
+int main(int argc, char **argv) {
+  (void)argv;
 
-	int **p, *q,*a,b;
-	//p = q;
-	p = &a;
-	if(q)
-	q = &b;
-	if(p)
-	*p = q;
-	MAYALIAS(*p,q);
-	//p = q;
-	printf("%d,%d %d %d",*p,*q,a,b);
+  int **p;
+  int *q, *a;
+  int b, c;
 
-	/* AUTOGEN_ALIASCHECK */
-	MAYALIAS(p, &a);
-	MAYALIAS(q, &b);
-	NOALIAS(p, q);
-	/* END_AUTOGEN_ALIASCHECK */
+  /* init */
+  p = &a;
+
+  /* effects (flow) */
+  if (argc > 1) {
+    q = &b;
+  } else {
+    q = &c;
+  }
+
+  /* check (path) — отдельно от эффектов */
+  if (argc > 1) {
+    MUSTALIAS(q, &b);
+    NOALIAS(q, &c);
+  } else {
+    MUSTALIAS(q, &c);
+    NOALIAS(q, &b);
+  }
+
+  /* effect */
+  if (p)
+    *p = q;
+
+  /* always true after assignment */
+  MUSTALIAS(*p, q);
+
+  /* AUTOGEN_ALIASCHECK */
+  MUSTALIAS(p, &a);
+  if (argc > 1) {
+    MUSTALIAS(q, &b);
+  } else {
+    NOALIAS(q, &b);
+  }
+  NOALIAS(p, q);
+  /* END_AUTOGEN_ALIASCHECK */
+
+  /* safe debug */
+  printf("%p %p %p\n", (void*)p, (void*)q, (void*)*p);
+  return 0;
 }
-

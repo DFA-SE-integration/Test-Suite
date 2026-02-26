@@ -1,11 +1,12 @@
-extern MAYALIAS(void*,void*);
+#include "aliascheck.h"
+
 struct innerStruct{
-int m;
-int* n;
+  int m;
+  int* n;
 };
 struct myStruct{
-float a;
-struct innerStruct b;
+  float a;
+  struct innerStruct b;
 };
 
 int main(){
@@ -13,5 +14,5 @@ int main(){
   x.b.n = malloc(10);
   struct myStruct y;
   memcpy(&y,&x,sizeof(struct myStruct));
-  MAYALIAS(x.b.n,y.b.n);
+  MUSTALIAS(x.b.n, y.b.n);
 }

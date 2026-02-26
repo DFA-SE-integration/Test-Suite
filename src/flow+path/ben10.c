@@ -1,29 +1,35 @@
 #include "aliascheck.h"
-int main(){
 
-	int a,b,*p,i,c;
+int main(int argc, char **argv){
+    int a, b, *p, c;
+    int cond = (argc > 1);
 
-	if(i) 
-		p =&a;
-	else
-		p = &b;
+    /* Phase 1: effects */
+    if (cond)
+        p = &a;
+    else
+        p = &b;
 
-	*p = 10;
+    /* ---- merge point ---- */
 
-	c = *p;
+    /* Phase 2: checks (path) */
+    if (cond) {
+        MUSTALIAS(p, &a);
+        NOALIAS(p, &b);
+    } else {
+        MUSTALIAS(p, &b);
+        NOALIAS(p, &a);
+    }
 
-	a = 5;
+    /* Flow kill */
+    p = &a;
 
-	b = 4;
+    /* Flow check */
+    MUSTALIAS(p, &a);
 
-	*p = 20;
+    /* остальная логика, если нужна */
+    *p = 10;
+    c = *p;
 
-	p = &a;
-
-	*p = 10;
-
-	/* AUTOGEN_ALIASCHECK */
-	MAYALIAS(p, &a);
-	/* END_AUTOGEN_ALIASCHECK */
+    return 0;
 }
-

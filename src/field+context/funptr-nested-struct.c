@@ -1,31 +1,43 @@
-extern void MAYALIAS(void*,void*);
-struct interesting {
-        int dummy;
-        void (*f1)(int*);
-        void (*f2)(int*);
+#include "aliascheck.h"
+
+struct Ops {
+    void (*set)(int **slot, int *v);
 };
 
-struct nested_ptr {
-        int dummy;
-        struct interesting* ptr;
+struct Node {
+    int tag;
+    struct Ops *ops;
+    int *payload;
 };
 
-int g;
-void f1(int* a){ MAYALIAS(a, &g);}
-void f2(int* a){ MAYALIAS(a, &g);}
+void set_impl(int **slot, int *v) {
+    *slot = v;
+}
 
-struct interesting i1 = {
-        .f1 = f1,
-        .f2 = f2
-};
+struct Ops G = { .set = set_impl };
 
-struct nested_ptr n1 = {
-        .ptr = &i1
-};
+void update(struct Node *n, int *v) {
+    /* field-sensitive access: n->ops->set and n->payload */
+    n->ops->set(&n->payload, v);
+}
 
-void test_ptr() {
-        struct nested_ptr tmp = n1;
-        struct interesting interesting_stub = *tmp.ptr;
-        interesting_stub.f1(&g);
-        interesting_stub.f2(&g);
+int main(void) {
+    int a, b;
+    struct Node n1, n2;
+
+    n1.ops = &G;
+    n2.ops = &G;
+    n1.payload = 0;
+    n2.payload = 0;
+
+    /* same callee, different calling contexts */
+    update(&n1, &a);
+    update(&n2, &b);
+
+    /* field + context sensitive facts */
+    MUSTALIAS(n1.payload, &a);
+    MUSTALIAS(n2.payload, &b);
+    NOALIAS(n1.payload, n2.payload);
+
+    return 0;
 }

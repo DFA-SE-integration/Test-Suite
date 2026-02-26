@@ -1,28 +1,30 @@
-/*
- * Field cycle.
- * Author: Sen Ye
- * Date: 10/10/2013
- */
-
 #include <stdlib.h>
 #include "aliascheck.h"
 
 struct MyStruct {
-	int * f1;
-	struct MyStruct * next;
+    int *f1;
+    struct MyStruct *next;
 };
 
-int main() {
-	struct MyStruct * p = (struct MyStruct *) malloc (sizeof(struct MyStruct));
-	int num = 10;
-	while (num) {
-		p->next = (struct MyStruct *) malloc (sizeof(struct MyStruct));
-		p->next->f1 = (int *) malloc (sizeof(int));
-		p = p->next;
-	}
-	struct MyStruct *q = p;
-	MAYALIAS(q->next, p->next->next);
-	MAYALIAS(q->f1, p->next->f1);
-	return 0;
-}
+int main(void) {
+    struct MyStruct *head = malloc(sizeof(struct MyStruct));
+    struct MyStruct *p = head;
+    int num = 2;
 
+    head->next = NULL;
+    head->f1 = NULL;
+
+    while (num--) {
+        p->next = malloc(sizeof(struct MyStruct));
+        p->next->f1 = malloc(sizeof(int));
+        p->next->next = NULL;
+        p = p->next;
+    }
+
+    struct MyStruct *q = p;
+
+    MUSTALIAS(q, p);
+    MUSTALIAS(q->f1, p->f1);
+
+    return 0;
+}

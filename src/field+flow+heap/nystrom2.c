@@ -1,46 +1,35 @@
+#include <stdlib.h>
 #include "aliascheck.h"
+
 int a,b;
+
 struct foo{
-	int x;
-	int y;
-
+    int x;
+    int y;
 };
-
 typedef struct foo FOO;
 
-void* alloc(int n){
-	return malloc(n);
-
+void allocation(FOO **s){
+    *s = (FOO*)malloc(sizeof(FOO));
 }
 
-void allocation(int** s){
+FOO *ex(void){
+    int *q;
+    FOO *p;
 
-	*s = malloc(10);
-}
-FOO *ex(){
+    allocation(&p);
 
-	int *q;
-	FOO *p;
-	allocation(&p);
-	/*
-	FOO *w;
-	p = (FOO*)alloc(sizeof(FOO));
-	p->x = a;
-	p->y = b;
-	q = &a;
-	*q = b;
-	*/
+    q = &a;
 
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(q, &a);
-/* END_AUTOGEN_ALIASCHECK */
+    /* AUTOGEN_ALIASCHECK */
+    MUSTALIAS(q, &a);
+    /* END_AUTOGEN_ALIASCHECK */
 
-	return p;
-
+    return p;
 }
 
-void main(){
-
-	ex();
-
+int main(void){
+    FOO *r = ex();
+    free(r);
+    return 0;
 }

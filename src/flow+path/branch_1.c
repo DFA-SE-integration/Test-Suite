@@ -1,19 +1,28 @@
-/*
- * Branches for testing flow-sensitive analysis.
- * Author: Sen Ye
- * Date: 08/11/2013
- */
-
 #include "aliascheck.h"
 
-int main() {
-	int *p, *q;
-	int x, y;
-	if (x)
-		p = &x;
-	else
-		p = &y;
-	q = &y;
-	MAYALIAS(p, q);
-	return 0;
+int main(int argc, char **argv) {
+    int *p, *q;
+    int x, y;
+    int cond = (argc > 1);   /* инициализированный предикат, оба пути возможны */
+
+    /* Phase 1: effects */
+    if (cond)
+        p = &x;
+    else
+        p = &y;
+
+    q = &y;
+
+    /* ---- merge point ---- */
+
+    /* Phase 2: checks */
+    if (cond) {
+        NOALIAS(p, q);       /* p=&x, q=&y */
+        MUSTALIAS(p, &x);
+    } else {
+        MUSTALIAS(p, q);     /* p=&y, q=&y */
+        MUSTALIAS(p, &y);
+    }
+
+    return 0;
 }

@@ -1,29 +1,44 @@
 #include "aliascheck.h"
-int *p,a,b;
-void foo(int* p){
 
-    *p=100;
+int *p;
 
+void foo(int *p){
+    *p = 100;
 }
-int main(){
-    int *q,s,c,d;
+
+int main(int argc, char **argv){
+    int *q, s, c, d;
+    int cond = (argc > 1);   /* стабильное условие без UB */
+
     q = &s;
-    p=q;
-    if(a){
-	p =&c;
+    p = q;
+
+    /* Phase 1: effects */
+    if (cond) {
+        p = &c;
+    } else {
+        p = &d;
     }
-    else{
-	p=&d;
-    }
+
     *p = 100;
     foo(p);
 
+    /* ---- merge point ---- */
 
-/* AUTOGEN_ALIASCHECK */
-MAYALIAS(q, &s);
-MAYALIAS(p, &d);
-NOALIAS(q, p);
-/* END_AUTOGEN_ALIASCHECK */
+    /* Phase 2: path-specific checks using the same predicate */
+    if (cond) {
+        MUSTALIAS(p, &c);
+        NOALIAS(p, &d);
+
+        MUSTALIAS(q, &s);
+        NOALIAS(q, p);
+    } else {
+        MUSTALIAS(p, &d);
+        NOALIAS(p, &c);
+
+        MUSTALIAS(q, &s);
+        NOALIAS(q, p);
+    }
 
     return 0;
 }

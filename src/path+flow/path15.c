@@ -1,18 +1,47 @@
 #include "aliascheck.h"
 
-int main(){
-    int **p, *q, **w,*v, *a,a1,q1;
+int main(int argc, char **argv) {
+    (void)argv;
+
+    int **p, *q, **w, *v;
+    int *a;
+    int a1, q1;
+
+    /* init */
     a = &a1;
     p = &a;
     q = &q1;
-    w = 0;
-    if(p)
-        *p = q;
-    else
-        w = &a;
 
+    /* effects (path + flow) */
+    int take = (argc > 1);
+    if (take) {
+        *p = q;          /* a = &q1 (through p) */
+    } else {
+        /* keep a = &a1 */
+    }
+
+    /* merge */
+    int *a_mid = a;
+
+    /* checks (path) */
+    if (take) {
+        MUSTALIAS(a_mid, &q1);
+        NOALIAS(a_mid, &a1);
+    } else {
+        MUSTALIAS(a_mid, &a1);
+        NOALIAS(a_mid, &q1);
+    }
+
+    /* flow: overwrite back to &a1 so final v is deterministic */
+    a = &a1;
+
+    /* make deref defined on all paths */
+    w = &a;
     v = *w;
-    NOALIAS(v,&q1);
-    MAYALIAS(v,&a1);
 
+    /* final checks (no MAY) */
+    MUSTALIAS(v, &a1);
+    NOALIAS(v, &q1);
+
+    return 0;
 }

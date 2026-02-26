@@ -16,6 +16,6 @@ int * my_alloc() {
 int main() {
 	int * o1 = my_alloc();
 	int * o2 = my_alloc();
-	MAYALIAS(o1, o2);
+	NOALIAS(o1, o2); // Разные malloc дают разные указатели
 	return 0;
 }

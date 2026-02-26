@@ -25,7 +25,7 @@ FOO *ex(){
 	*q = b;
 
 /* AUTOGEN_ALIASCHECK */
-MAYALIAS(q, &a);
+MUSTALIAS(q, &a);
 /* END_AUTOGEN_ALIASCHECK */
 
 	return p;
